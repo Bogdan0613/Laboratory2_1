@@ -51,10 +51,9 @@ struct Node_transport {
 Node_transport* head2 = nullptr;
 Node_transport* tail2 = nullptr;
 
-void bus_arrived(Node_transport* tail2, int bus_number, char driver_initials[50], int route_number, bool location);
-void print_station(Node_transport* const head);
+void add_bus(Node_transport* tail2, int bus_number, char driver_initials[50], int route_number, bool location);
 void print_buses(Node_transport* const head);
-void bus_left(Node_transport** head, Node_transport** tail, int key);
+void delete_b(Node_transport** head, Node_transport** tail, int key);
 Node_transport* find(Node_transport* const head, int key);
 
 Node_transport* find(Node_transport* const head, int key){
@@ -66,7 +65,7 @@ Node_transport* find(Node_transport* const head, int key){
     return node;
 }
 
-void bus_left(Node_transport* head2, Node_transport* tail2, int key){
+void delete_b(Node_transport* head2, Node_transport* tail2, int key){
     if(Node_transport* node = find(head2,key)){
         if(node == head2){
             head2 = (head2)->next;
@@ -124,10 +123,7 @@ FILE* f_trolleybuses;
 
 void admin_menu();
 void user_menu();
-int main(){
-    //    time_t seconds = time(NULL);
-    //    tm* timeinfo = localtime(&seconds);
-    //    cout<<"Current Datetime:"<<asctime(timeinfo)<<endl;
+static void entry() {
     while(true){
         int choice;
         cout << "Enter the action:\n1)Sign in\n2)Register\n3)End session\n";
@@ -154,14 +150,13 @@ int main(){
                 if(f_clients != NULL){
                     fread(s2, sizeof(char), 20, f_clients);
                 }
+                fclose(f_clients);
                 f_admin = fopen("admin.txt", "rb");
                 
                 if(f_admin != NULL){
                     fread(s3, sizeof(char), 20, f_admin);
                 }
                 fclose(f_admin);
-                
-                cout<<"!!!"<<client_data<<endl<<"!!!"<<s2<<endl;
                 
                 if(client_data == string(s3)){
                     add_client(tail1, login, password, 1);
@@ -195,6 +190,26 @@ int main(){
         }
     }
 }
+
+int main(){
+    int routes[] = {1, 5, 7, 15, 18};
+    //    time_t seconds = time(NULL);
+    //    tm* timeinfo = localtime(&seconds);
+    //    cout<<"Current Datetime:"<<asctime(timeinfo)<<endl;
+    f_buses = fopen("ListOfBusses.txt","ab");
+    fwrite(routes, sizeof(int), sizeof(routes)/sizeof(int), f_buses);
+    fclose(f_buses);
+    
+    f_trams = fopen("ListOfTrams.txt","ab");
+    fwrite(routes, sizeof(int), sizeof(routes)/sizeof(int), f_trams);
+    fclose(f_trams);
+    
+    f_trolleybuses = fopen("ListOfTrolleys.txt","ab");
+    fwrite(routes, sizeof(int), sizeof(routes)/sizeof(int), f_trolleybuses);
+    fclose(f_trolleybuses);
+    
+    entry();
+}
 void user_menu(){
     int choice = 1;
     while(choice != 0){
@@ -204,13 +219,24 @@ void user_menu(){
             case show_list:
                 print_buses(head2);
                 break;
-            case soonest_transport:
-                print_buses(head2);
-                cout << "Enter the transport number:";
-                break;
+            case soonest_transport:{
+                time_t theTime = time(NULL);
+                struct tm *aTime = localtime(&theTime);
+                int min=aTime->tm_min;
+                int type;
+                cout << "Enter the type of the transport(1-bus, 2-tram, 3-trolley):";
+                cin >> type;
+                if(type == 1){
+                    cout << "Minutes left:"<<10 - min%10<<endl;
+                }else if(type == 2){
+                    cout << "Minutes left:"<<15 - min%15<<endl;
+                }else if(type == 3){
+                    cout << "Minutes left:"<<20 - min%20<<endl;
+                }
+            break;}
             case Exit:
                 cout << "Goodbye!"<<endl;
-                choice = 0;
+                entry();
                 break;
                 
         }
@@ -239,7 +265,7 @@ void admin_menu(){
                     for(int i = 0; i<5; i++){
                         if(num1==num[i]){
                             cout << "The bus succesfully added"<<endl;
-                            add_bus(tail2, 5, num[i], 10, 1);
+                            add_bus(tail2, (rand() %20), 10, num[i], 1);
                             exists = 1;
                         }
                     }
@@ -247,7 +273,7 @@ void admin_menu(){
                         cout << "Do you want to add a bus?(1-Yes 2-No)";
                         cin >> choose;
                         if(choose == 1){
-                            add_bus(tail2, 5, num1, 10, 1);
+                            add_bus(tail2, (rand() %20), 10, num1, 1);
                             cout << "Bus succesfully added"<<endl;
                             f_buses = fopen("ListOfBusses.txt","rb");
                             fwrite(&num1, sizeof(int), 1, f_buses);
@@ -268,7 +294,7 @@ void admin_menu(){
                     for(int i = 0; i<5; i++){
                         if(num1==num[i]){
                             cout << "The tram succesfully added"<<endl;
-                            add_bus(tail2, 5, num[i], 15, 1);
+                            add_bus(tail2, (rand() %20), 15, num[i], 1);
                             exists = 1;
                         }
                     }
@@ -276,7 +302,7 @@ void admin_menu(){
                         cout << "Do you want to add a bus?(1-Yes 2-No)";
                         cin >> choose;
                         if(choose == 1){
-                            add_bus(tail2, 5, num1, 15, 1);
+                            add_bus(tail2, (rand() %20), 15, num1, 1);
                             cout << "The tram succesfully added"<<endl;
                             f_buses = fopen("ListOfTrams.txt","rb");
                             fwrite(&num1, sizeof(int), 1, f_trams);
@@ -297,7 +323,7 @@ void admin_menu(){
                     for(int i = 0; i<5; i++){
                         if(num1==num[i]){
                             cout << "The trolleybus succesfully added"<<endl;
-                            add_bus(tail2, 5, num[i], 15, 1);
+                            add_bus(tail2, (rand() %20), 15, num[i], 1);
                             exists = 1;
                         }
                     }
@@ -305,7 +331,7 @@ void admin_menu(){
                         cout << "Do you want to add a trolleybus?(1-Yes 2-No)";
                         cin >> choose;
                         if(choose == 1){
-                            add_bus(tail2, 5, num1, 15, 1);
+                            add_bus(tail2, (rand() %20), 15, num1, 1);
                             cout << "The trolleysbus succesfully added"<<endl;
                             f_buses = fopen("ListOfTrolleys.txt","rb");
                             fwrite(&num1, sizeof(int), 1, f_trolleybuses);
@@ -326,12 +352,12 @@ void admin_menu(){
                 int key;
                 cout << "Enter the route number to delete:";
                 cin >> key;
-                bus_left(head2, tail2, key);
+                delete_b(head2, tail2, key);
                 break;
                 
             case end_session:
-                choice = 0;
                 cout << "Goodbye"<<endl;
+                entry();
                 break;
         }
     }
