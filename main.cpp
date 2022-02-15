@@ -187,7 +187,7 @@ int main(){
                 fwrite(login, sizeof(login), sizeof(login), f_clients);
                 fwrite(password, sizeof(password), sizeof(password), f_clients);
                 fclose(f_clients);
-                admin_menu();
+                user_menu();
                 break;
             }
                 
@@ -323,7 +323,10 @@ void admin_menu(){
                 break;
                 
             case delete_bus:
+                int key;
                 cout << "Enter the route number to delete:";
+                cin >> key;
+                bus_left(head2, tail2, key);
                 break;
                 
             case end_session:
